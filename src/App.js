@@ -1,52 +1,49 @@
-import { useState } from "react";
 import "./App.css";
+import { useContext, useEffect } from "react";
+import { AppContext } from "./context/AppContext";
+import Header from "./components/Header";
+import Blogs from "./components/Blogs";
+import Pagination from "./components/Pagination";
+import { Route, Routes, useSearchParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import Home from "./Pages/Home";
+import BlogPage from "./Pages/BlogPage";
+import TagPage from "./Pages/TagPage";
+import CategoryPage from "./Pages/CategoryPage";
 
-function App() {
-    const [count, setCount] = useState(0);
+export default function App() {
+    const { fetchBlogPosts } = useContext(AppContext);
 
-    function decreaseHandler() {
-        setCount(count - 1);
-    }
-    function increaseHandler() {
-        setCount(count + 1);
-    }
+    const [searchParams, setSearchParams] = useSearchParams();
+    const location = useLocation();
 
-    function resetHandler() {
-        setCount(0);
-    }
+    useEffect(() => {
+        const page = searchParams.get("page") ?? 1;
+
+        if (location.pathname.includes("tags")) {
+            //iska matlab tag wala page show krna h
+            const tag = location.pathname
+                .split("/")
+                .at(-1)
+                .replaceAll("-", " ");
+            fetchBlogPosts(Number(page), tag);
+        } else if (location.pathname.includes("categories")) {
+            const category = location.pathname
+                .split("/")
+                .at(-1)
+                .replaceAll("-", " ");
+            fetchBlogPosts(Number(page), null, category);
+        } else {
+            fetchBlogPosts(Number(page));
+        }
+    }, [location.pathname, location.search]);
 
     return (
-        <div className="w-[100vw] h-[100vh] flex justify-center items-center bg-[#344151] flex-col gap-10">
-            <div className="text-[#0398d4] font-medium text-2xl">
-                Increment & Decrement
-            </div>
-
-            <div className="bg-white flex justify-center gap-12 py-3 rounded-sm text-[25px] text-[#344151]">
-                <button
-                    onClick={decreaseHandler}
-                    className="border-r-2 text-center w-20 border-[#bfbfbf] text-5xl"
-                >
-                    -
-                </button>
-
-                <div className="font-bold gap-12 text-5xl">{count}</div>
-
-                <button
-                    onClick={increaseHandler}
-                    className="border-l-2 text-center w-20 border-[#bfbfbf] text-5xl"
-                >
-                    +
-                </button>
-            </div>
-
-            <button
-                onClick={resetHandler}
-                className="bg-[#0398d4] text-white px-5 py-2 rounded-sm text-lg"
-            >
-                Reset
-            </button>
-        </div>
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/blog/:blogId" element={<BlogPage />} />
+            <Route path="/tags/:tag" element={<TagPage />} />
+            <Route path="/categories/:category" element={<CategoryPage />} />
+        </Routes>
     );
 }
-
-export default App;

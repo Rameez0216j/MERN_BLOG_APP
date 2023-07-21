@@ -1,2 +1,0 @@
-Hooks ---> utility function
-axios can be used for api call (more safe from fetch Api)
